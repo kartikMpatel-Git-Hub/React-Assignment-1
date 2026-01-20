@@ -2,19 +2,16 @@ import React, { useState, type ChangeEvent } from "react"
 import type { Product } from "../types/types"
 
 interface SetProductProps {
-    setProducts : React.Dispatch<React.SetStateAction<Product[]>>
-        setOpenAddForm: React.Dispatch<React.SetStateAction<boolean>>
+    product: Product,
+    setProduct: React.Dispatch<React.SetStateAction<Product>>
+    setProducts: React.Dispatch<React.SetStateAction<Product[]>>
+    setOpenEditForm: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
+const EditProduct = ({ product, setProduct, setProducts, setOpenEditForm }: SetProductProps) => {
 
-    const [newProduct, setNewProduct] = useState({
-        product: "",
-        price: 0,
-        qty: 0,
-        category: "",
-        brand: ""
-    })
+    // console.log(product);
+
     const [errors, setErrors] = useState<String[]>([])
     const key = "products"
     const addProduct = (e: React.FormEvent<HTMLFormElement>) => {
@@ -30,70 +27,76 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
     const saveProduct = () => {
 
         try {
-            const product: Product = {
-                id: Date.now(),
-                product: newProduct.product,
-                price: newProduct.price,
-                qty: newProduct.qty,
-                brand: newProduct.brand,
-                category: newProduct.category
+            const updatedProduct: Product = {
+                id: product.id,
+                product: product.product,
+                price: product.price,
+                qty: product.qty,
+                brand: product.brand,
+                category: product.category
             }
-            const storedItem = JSON.parse(localStorage.getItem(key) || "[]")
-            const updatedProducts = [...storedItem, product]
+            const storedItem: Product[] = JSON.parse(localStorage.getItem(key) || "[]")
+            const updatedProducts:Product[] = storedItem.map((item) => (
+                item.id != product.id
+                    ? item
+                    : {
+                        id : Number(product.id),
+                        product: product.product,
+                        price: product.price,
+                        qty: product.qty,
+                        brand: product.brand,
+                        category: product.category
+                    }
+            ))
+            // console.log(updatedProducts);
             localStorage.setItem(key, JSON.stringify(updatedProducts))
             setProducts(updatedProducts)
-            clearForm()
-            setOpenAddForm(false)
+            setOpenEditForm(false)
+            // closeForm()
         } catch (error) {
             // console.log(error);
-            
+
             setErrors((prev) => [...prev, "Something Went Wrong while Adding Product"])
         }
 
     }
 
-    const clearForm = () => {
-        setNewProduct({
-            product: "",
-            price: 0,
-            qty: 0,
-            category: "",
-            brand: ""
-        })
+    const closeForm = () => {
+        setOpenEditForm(false)
     }
 
     const isValidForm = () => {
-        if (newProduct.product.length == 0) {
+        if (product.product.length == 0) {
             setErrors((prev) => [...prev, "Product Name Can Not Be Empty"])
         }
 
-        if (newProduct.product.length <= 2 && newProduct.product.length > 0) {
+        if (product.product.length <= 2 && product.product.length > 0) {
             setErrors((prev) => [...prev, "Product Name Required Atlest 3 Characters"])
         }
 
-        if (newProduct.price <= 0) {
+        if (Number(product.price) <= 0) {
             setErrors((prev) => [...prev, "Product Price Can't Be 0 or Negative"])
         }
 
-        if (newProduct.category.length == 0) {
+        if (product.category.length == 0) {
             setErrors((prev) => [...prev, "Category Can Not Be Empty"])
         }
 
-        if (newProduct.category.length <= 2 && newProduct.category.length > 0) {
+        if (product.category.length <= 2 && product.category.length > 0) {
             setErrors((prev) => [...prev, "Category Required Atlest 3 Characters"])
         }
 
-        if (newProduct.brand.length == 0) {
+        if (product.brand.length == 0) {
             setErrors((prev) => [...prev, "Brand Can Not Be Empty"])
         }
 
-        if (newProduct.brand.length <= 2 && newProduct.brand.length > 0) {
+        if (product.brand.length <= 2 && product.brand.length > 0) {
             setErrors((prev) => [...prev, "Brand Required Atlest 3 Characters"])
         }
         return true
     }
     const handleValueChange = (e: ChangeEvent<HTMLInputElement>): void => {
-        setNewProduct({ ...newProduct, [e.target.name]: e.target.value })
+        setProduct({ ...product, [e.target.name]: e.target.value })
     }
 
     return (
@@ -105,7 +108,7 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                             Product
                         </div>
                         <input
-                            value={newProduct.product}
+                            value={product.product.toString()}
                             type="text"
                             name="product"
                             onChange={handleValueChange}
@@ -118,7 +121,7 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                             price
                         </div>
                         <input
-                            value={newProduct.price}
+                            value={Number(product.price)}
                             type="number"
                             min={0}
                             name="price"
@@ -132,7 +135,7 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                             quantity
                         </div>
                         <input
-                            value={newProduct.qty}
+                            value={Number(product.qty)}
                             type="number"
                             min={0}
                             name="qty"
@@ -146,7 +149,7 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                             category
                         </div>
                         <input
-                            value={newProduct.category}
+                            value={product.category.toString()}
                             type="text"
                             name="category"
                             onChange={handleValueChange}
@@ -159,7 +162,7 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                             Brand
                         </div>
                         <input
-                            value={newProduct.brand}
+                            value={product.brand.toString()}
                             type="text"
                             name="brand"
                             onChange={handleValueChange}
@@ -171,12 +174,14 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
                         <input
                             type="submit"
                             className="p-3 bg-slate-800 text-white rounded-2xl"
-                            value={"add Product"}
+                            value={"Update Product"}
                         />
-                        <input
-                            type="reset"
+                        <button
                             className="p-3 bg-slate-800 text-white rounded-2xl"
-                        />
+                            onClick={closeForm}
+                        >
+                            Cancle
+                        </button>
                     </div>
                 </div>
             </form>
@@ -193,4 +198,4 @@ const AddProduct = ({setProducts,setOpenAddForm}:SetProductProps) => {
     )
 }
 
-export default AddProduct
+export default EditProduct
