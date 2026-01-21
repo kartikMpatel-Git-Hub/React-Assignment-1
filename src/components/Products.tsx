@@ -74,7 +74,7 @@ const Products = () => {
     }
 
     return (
-        <div>
+        <div className="">
             <div>
                 {openAddForm ?
                     <button

@@ -1,3 +1,4 @@
+import { useTheme } from "../context/ThemeContext"
 import type { Product } from "../types/types"
 
 // interface ProductCardProps {
@@ -5,10 +6,12 @@ import type { Product } from "../types/types"
 // }
 
 const ProductCard = (product: {product : Product}) => {
+
+    const {isDarkTheme} = useTheme()
     return (
-        <div className="bg-slate-700 text-white font-semibold rounded-2xl p-3">
+        <div className={`${isDarkTheme ? "bg-slate-800 text-white": "text-black bg-white"} font-semibold rounded-2xl p-3`}>
             <div>
-                <div>
+                <div className={``}>
                     name : {product.product.product}
                 </div>
                 <div className="flex">
